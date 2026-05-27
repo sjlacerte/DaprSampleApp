@@ -27,6 +27,7 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "dapr-iot-ingestor"
         dapr.io/app-port: "8080"
+        dapr.io/app-protocol: "http"
         dapr.io/log-level: "info"
     spec:
       serviceAccountName: dapr-iot-ingestor
@@ -50,4 +51,4 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-  type: LoadBalancer
+  type: LoadBalancer  # intentionally public — IoT devices POST sensor readings directly to this endpoint

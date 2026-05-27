@@ -27,6 +27,7 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "dapr-iot-processor"
         dapr.io/app-port: "8080"
+        dapr.io/app-protocol: "http"
         dapr.io/log-level: "info"
     spec:
       serviceAccountName: dapr-iot-processor
