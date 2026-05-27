@@ -3,6 +3,8 @@ kind: Component
 metadata:
   name: configstore
   namespace: dapr-iot
+auth:
+  secretStore: kubernetes       # resolves secretKeyRef from K8s secrets
 spec:
   type: configuration.redis
   version: v1
@@ -12,6 +14,6 @@ spec:
         name: dapr-iot-redis-host
         key: host               # same Redis instance as lockstore
     - name: redisPassword
-      value: ""
+      value: ""                 # ElastiCache deployed without auth; IRSA handles AWS-level access
     - name: enableTLS
       value: "false"
