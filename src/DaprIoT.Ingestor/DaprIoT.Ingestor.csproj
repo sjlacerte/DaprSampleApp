@@ -4,11 +4,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Suppress obsolete warning: InvokeMethodAsync is intentionally used to demonstrate the Service Invocation building block -->
+    <NoWarn>CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapr.AspNetCore" Version="1.14.0" />
-    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.14.0" />
+    <PackageReference Include="Dapr.AspNetCore" Version="1.17.9" />
+    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.17.9" />
   </ItemGroup>
 
 </Project>

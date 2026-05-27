@@ -4,12 +4,14 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Suppress alpha-stage diagnostic: Lock/Unlock are intentionally used to demonstrate the Distributed Lock building block -->
+    <NoWarn>DAPR_DISTRIBUTEDLOCK</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapr.AspNetCore" Version="1.14.0" />
-    <PackageReference Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
-    <PackageReference Include="Dapr.Workflow" Version="1.14.0" />
+    <PackageReference Include="Dapr.AspNetCore" Version="1.17.9" />
+    <PackageReference Include="Dapr.Actors.AspNetCore" Version="1.17.9" />
+    <PackageReference Include="Dapr.Workflow" Version="1.17.9" />
   </ItemGroup>
 
 </Project>
