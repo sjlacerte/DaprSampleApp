@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Dapr.Client;
 
 namespace DaprIoT.Ingestor.Services;
@@ -9,11 +10,8 @@ public class ThresholdService : BackgroundService
     private const string ConfigStore = "configstore";
     private static readonly IReadOnlyList<string> Keys = ["maxTemperature", "minPressure"];
 
-    public Dictionary<string, string> Current { get; } = new()
-    {
-        ["maxTemperature"] = "50",
-        ["minPressure"] = "10"
-    };
+    public ConcurrentDictionary<string, string> Current { get; } = new(
+        new Dictionary<string, string> { ["maxTemperature"] = "50", ["minPressure"] = "10" });
 
     public ThresholdService(DaprClient daprClient, ILogger<ThresholdService> logger)
     {
@@ -28,8 +26,11 @@ public class ThresholdService : BackgroundService
             cancellationToken: stoppingToken);
         foreach (var (key, item) in initial.Items)
         {
-            Current[key] = item.Value;
-            _logger.LogInformation("Loaded config {Key} = {Value}", key, item.Value);
+            if (!string.IsNullOrEmpty(item.Value))
+            {
+                Current[key] = item.Value;
+                _logger.LogInformation("Loaded config {Key} = {Value}", key, item.Value);
+            }
         }
 
         // Subscribe to live updates
@@ -40,8 +41,11 @@ public class ThresholdService : BackgroundService
         {
             foreach (var (key, item) in update)
             {
-                Current[key] = item.Value;
-                _logger.LogInformation("Config updated: {Key} = {Value}", key, item.Value);
+                if (!string.IsNullOrEmpty(item.Value))
+                {
+                    Current[key] = item.Value;
+                    _logger.LogInformation("Config updated: {Key} = {Value}", key, item.Value);
+                }
             }
         }
     }

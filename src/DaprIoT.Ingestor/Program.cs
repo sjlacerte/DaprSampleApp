@@ -15,6 +15,8 @@ var app = builder.Build();
 using (var startupClient = new DaprClientBuilder().Build())
 {
     var secret = await startupClient.GetSecretAsync("secretstore", "dapr-iot-api-key");
+    // Dapr returns secret as IDictionary<string,string>. The key "api-key" matches the
+    // JSON field name inside the AWS Secrets Manager secret value: {"api-key": "<value>"}.
     var apiKey = secret.GetValueOrDefault("api-key", string.Empty);
     app.Logger.LogInformation("Loaded API key from Secrets Manager (length: {Len})", apiKey.Length);
     // In a real app you would store apiKey and validate it on each request.
