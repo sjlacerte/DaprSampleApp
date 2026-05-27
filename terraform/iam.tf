@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 # --- IRSA trust policy helper ---
 data "aws_iam_policy_document" "irsa_assume" {
   for_each = toset(["ingestor", "processor"])
