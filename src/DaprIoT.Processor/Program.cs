@@ -1,5 +1,5 @@
 using Dapr.Actors;
-using Dapr.Actors.AspNetCore;
+using Dapr.Actors.Client;
 using Dapr.Client;
 using Dapr.Workflow;
 using DaprIoT.Processor.Actors;
