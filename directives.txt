@@ -1,0 +1,100 @@
+GENERAL DEVELOPMENT GOAL:
+
+The goal at hand is to develop a sample application for the benefit of developers that want to learn how to create applications that use the open source 
+Dapr (Distributed Application Runtime). The idea is to demonstrate the core Dapr concepts by creating a sample app that makes use of each of the Dapr 
+Components (to be listed later).
+
+OVERARCHING GUIDANCE:
+
+- All code is to be generated in C# using the latest .Net version and C#/.Net best practices
+- Dapr supports both Kubernetes and self-hosted deployments. Make it such that the generated code takes the form of 2 separate Dapr applications deployed as 2 Kubernetes Pods
+- The 2 Dapr applications should be able to interact with each other via Dapr's Service Invocation building block
+- The sample app should be as simple as possible while still demonstrating the core Dapr concepts
+- The sample app is to deploy to AWS, specifically AWS EKS (Kubernetes)
+- The Dapr Components will be backed by cloud resources available on the AWS cloud
+
+DAPR COMPONENTS TO DEMONSTRATE VIA SAMPLE CODE:
+
+- Secrets
+- Actors
+- External Configuration
+- Distributed Lock
+- Workflow
+- Service-to-Service Invocation
+
+COST CONSTRAINTS:
+
+- This deploys to a personal AWS account — cost matters
+- All AWS infrastructure MUST be manageable via a single `terraform destroy` to fully remove billable resources
+- Use smallest viable instance/tier sizes (not production-grade):
+  - EKS worker nodes: t3.small (2 nodes minimum)
+  - ElastiCache: cache.t3.micro, single node, single AZ
+  - DynamoDB: on-demand billing (not provisioned capacity)
+- Tag all resources with: project = "dapr-iot-sample" (for AWS Cost Explorer tracking)
+- README must include a prominent "Teardown" section with exact commands to destroy all resources
+- README should include a rough cost estimate so the user knows what running the stack costs per hour/day
+
+DECIDED APPLICATION ARCHITECTURE:
+
+- Domain: IoT sensor pipeline — two services model an ingestion + processing split
+- Service A: DaprIoT.Ingestor (ASP.NET Core Minimal API)
+  - Exposes POST /sensors/{deviceId}/readings
+  - Uses: Secrets, External Configuration, Service Invocation (calls Processor)
+- Service B: DaprIoT.Processor (ASP.NET Core Minimal API + Dapr Actor host)
+  - Invoked by Ingestor via Dapr Service Invocation
+  - Uses: Actors (DeviceActor — one per device), Workflow (AnomalyDetectionWorkflow: Validate → Analyze → Alert), Distributed Lock (per-device lock before processing)
+- Infrastructure as Code: Terraform
+- Kubernetes namespace: dapr-iot
+- Both pods use IRSA (IAM Roles for Service Accounts) for AWS auth — no static credentials
+
+DECIDED DAPR COMPONENT → AWS MAPPINGS:
+
+- Secrets         → AWS Secrets Manager        (secretstore.yaml  — type: secretstores.aws.secretmanager)
+- External Config → Amazon ElastiCache (Redis) (configuration.yaml — type: configuration.redis; same Redis instance as lock, different Dapr component; NOTE: AWS AppConfig has no Dapr component — Redis is the correct choice)
+- State Store     → Amazon DynamoDB            (statestore.yaml   — type: state.aws.dynamodb; used by Actors + Workflow)
+- Distributed Lock→ Amazon ElastiCache (Redis) (lock.yaml         — type: lock.redis)
+- Service Invoc.  → Dapr native (no AWS svc)
+- Actors          → backed by DynamoDB state store (see above)
+- Workflow        → backed by DynamoDB state store (see above)
+
+DECIDED PROJECT STRUCTURE:
+
+DaprSampleApp/
+├── src/
+│   ├── DaprIoT.Ingestor/
+│   │   ├── Program.cs
+│   │   ├── Models/SensorReading.cs
+│   │   └── DaprIoT.Ingestor.csproj
+│   └── DaprIoT.Processor/
+│       ├── Program.cs
+│       ├── Actors/IDeviceActor.cs
+│       ├── Actors/DeviceActor.cs
+│       ├── Workflows/AnomalyDetectionWorkflow.cs
+│       ├── Workflows/Activities/ValidateReadingActivity.cs
+│       ├── Workflows/Activities/AnalyzeReadingActivity.cs
+│       ├── Workflows/Activities/AlertActivity.cs
+│       ├── Models/SensorReading.cs
+│       └── DaprIoT.Processor.csproj
+├── dapr/components/
+│   ├── secretstore.yaml
+│   ├── statestore.yaml
+│   ├── lock.yaml
+│   └── configuration.yaml
+├── k8s/
+│   ├── ingestor-deployment.yaml
+│   └── processor-deployment.yaml
+├── terraform/
+│   ├── main.tf, eks.tf, dynamodb.tf, elasticache.tf
+│   ├── secrets-manager.tf, appconfig.tf, iam.tf
+└── DaprSampleApp.sln
+
+YOUR RESOURCES:
+
+- All Dapr information that you're trained upon, however, use the latest docs where the information is more recent than your training data
+- WebSearch — can search the web for current Dapr docs, GitHub issues, changelogs
+- WebFetch — can fetch specific pages directly, e.g.:
+- https://docs.dapr.io — official docs
+- https://github.com/dapr/dapr — runtime source
+- https://github.com/dapr/components-contrib — community components
+- https://github.com/dapr/quickstarts — working examples
+- Any/all other resources you have

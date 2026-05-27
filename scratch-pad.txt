@@ -1,0 +1,12 @@
+- State Management
+- Pubish & Subscribe
+- Bindings
+- Secrets
+- Actors
+- External Configuration
+- Distributed Lock
+- Workflow
+- Cryptography
+- Conversation
+- Middleware
+- Service-to-Service Invocation
