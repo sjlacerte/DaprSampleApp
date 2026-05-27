@@ -54,8 +54,13 @@ app.MapPost("/process-reading", async (
 
         if (result.AnomalyDetected)
         {
+            var thresholdKey = request.Reading.Unit.Equals("bar", StringComparison.OrdinalIgnoreCase)
+                ? "minPressure"
+                : "maxTemperature";
             if (!float.TryParse(
-                    request.Thresholds.GetValueOrDefault("maxTemperature", "50"),
+                    request.Thresholds.GetValueOrDefault(thresholdKey, "50"),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
                     out var threshold))
                 threshold = 50f;
 
