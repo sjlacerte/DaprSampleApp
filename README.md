@@ -72,7 +72,7 @@ kubectl apply -f k8s/namespace.yaml
 # Replace REDIS_HOST with the value from `terraform output redis_host`
 kubectl run redis-seed --image=redis:7 --restart=Never -n dapr-iot -- \
   redis-cli -h <REDIS_HOST> -p 6379 \
-  SET maxTemperature 50 SET minPressure 10
+  MSET maxTemperature 50 minPressure 10
 kubectl delete pod redis-seed -n dapr-iot
 ```
 
@@ -85,6 +85,8 @@ kubectl create secret generic dapr-iot-redis-host \
 ```
 
 ### 6. Apply Dapr components
+
+If you changed `var.aws_region` in Terraform to something other than `us-east-1`, update the `region` field in `dapr/components/secretstore.yaml` and `dapr/components/statestore.yaml` to match before applying.
 
 ```bash
 kubectl apply -f dapr/components/

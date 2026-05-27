@@ -13,3 +13,5 @@ spec:
       value: "us-east-1"
     - name: ttlAttributeName
       value: "ttl"
+    - name: actorStateStore
+      value: "true"

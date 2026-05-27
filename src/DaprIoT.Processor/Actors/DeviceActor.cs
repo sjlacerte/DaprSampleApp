@@ -28,13 +28,15 @@ public class DeviceActor : Actor, IDeviceActor
     {
         if (reading.Unit.Equals("celsius", StringComparison.OrdinalIgnoreCase)
             && thresholds.TryGetValue("maxTemperature", out var maxTempStr)
-            && float.TryParse(maxTempStr, out var maxTemp)
+            && float.TryParse(maxTempStr, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var maxTemp)
             && reading.Value > maxTemp)
             return true;
 
         if (reading.Unit.Equals("bar", StringComparison.OrdinalIgnoreCase)
             && thresholds.TryGetValue("minPressure", out var minPressStr)
-            && float.TryParse(minPressStr, out var minPress)
+            && float.TryParse(minPressStr, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var minPress)
             && reading.Value < minPress)
             return true;
 
