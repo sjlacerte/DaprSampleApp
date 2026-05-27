@@ -56,6 +56,9 @@ DECIDED DAPR COMPONENT → AWS MAPPINGS:
 - Service Invoc.  → Dapr native (no AWS svc)
 - Actors          → backed by DynamoDB state store (see above)
 - Workflow        → backed by DynamoDB state store (see above)
+- Resiliency      → resiliency.yaml (Dapr-native; no AWS svc):
+    - Service invocation to Processor: 3 retries (exponential, 500ms→10s), 5s timeout, circuit breaker (trip on 5 consecutive failures)
+    - State store operations: 3 retries (exponential)
 
 DECIDED PROJECT STRUCTURE:
 
@@ -79,7 +82,8 @@ DaprSampleApp/
 │   ├── secretstore.yaml
 │   ├── statestore.yaml
 │   ├── lock.yaml
-│   └── configuration.yaml
+│   ├── configuration.yaml
+│   └── resiliency.yaml
 ├── k8s/
 │   ├── ingestor-deployment.yaml
 │   └── processor-deployment.yaml
