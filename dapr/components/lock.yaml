@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: lockstore
+  namespace: dapr-iot
+spec:
+  type: lock.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      secretKeyRef:
+        name: dapr-iot-redis-host
+        key: host               # K8s secret populated by Terraform output
+    - name: redisPassword
+      value: ""
+    - name: enableTLS
+      value: "false"

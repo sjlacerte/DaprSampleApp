@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: configstore
+  namespace: dapr-iot
+spec:
+  type: configuration.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      secretKeyRef:
+        name: dapr-iot-redis-host
+        key: host               # same Redis instance as lockstore
+    - name: redisPassword
+      value: ""
+    - name: enableTLS
+      value: "false"

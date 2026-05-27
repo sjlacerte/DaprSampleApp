@@ -1,0 +1,15 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: dapr-iot
+spec:
+  type: state.aws.dynamodb
+  version: v1
+  metadata:
+    - name: table
+      value: "dapr-iot-state"   # must match terraform/dynamodb.tf table name
+    - name: region
+      value: "us-east-1"
+    - name: ttlAttributeName
+      value: "ttl"

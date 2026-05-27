@@ -1,0 +1,32 @@
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: dapr-iot-resiliency
+  namespace: dapr-iot
+spec:
+  policies:
+    retries:
+      DefaultRetry:
+        policy: exponential
+        maxInterval: 10s
+        maxRetries: 3
+    timeouts:
+      DefaultTimeout: 5s
+    circuitBreakers:
+      DefaultCB:
+        maxRequests: 1
+        interval: 10s
+        timeout: 30s
+        trip: consecutiveFailures >= 5
+  targets:
+    apps:
+      dapr-iot-processor:
+        retry: DefaultRetry
+        timeout: DefaultTimeout
+        circuitBreaker: DefaultCB
+    components:
+      statestore:
+        inbound:
+          retry: DefaultRetry
+        outbound:
+          retry: DefaultRetry
