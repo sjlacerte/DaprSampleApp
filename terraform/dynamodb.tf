@@ -1,6 +1,6 @@
 resource "aws_dynamodb_table" "dapr_iot_state" {
   name         = "dapr-iot-state"
-  billing_mode = "PAY_PER_REQUEST"   # on-demand — no minimum charge
+  billing_mode = "PAY_PER_REQUEST" # on-demand — no minimum charge
   hash_key     = "key"
 
   attribute {
