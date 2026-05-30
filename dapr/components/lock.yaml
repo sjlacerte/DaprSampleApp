@@ -17,3 +17,5 @@ spec:
       value: ""                 # ElastiCache deployed without auth; IRSA handles AWS-level access
     - name: enableTLS
       value: "false"
+scopes:
+  - dapr-iot-processor

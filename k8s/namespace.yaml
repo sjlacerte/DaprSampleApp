@@ -4,3 +4,4 @@ metadata:
   name: dapr-iot
   labels:
     project: dapr-iot-sample
+    dapr.io/enabled: "true"

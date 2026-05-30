@@ -15,3 +15,5 @@ spec:
       value: "ttl"
     - name: actorStateStore
       value: "true"
+scopes:
+  - dapr-iot-processor

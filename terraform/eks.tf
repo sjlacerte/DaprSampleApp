@@ -24,6 +24,17 @@ module "eks" {
     }
   }
 
+  node_security_group_additional_rules = {
+    dapr_webhook = {
+      description              = "Allow EKS control plane to reach Dapr sidecar injector"
+      protocol                 = "tcp"
+      from_port                = 4000
+      to_port                  = 4000
+      type                     = "ingress"
+      source_cluster_security_group = true
+    }
+  }
+
   eks_managed_node_group_defaults = {
     iam_role_additional_policies = {
       AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"

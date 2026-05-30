@@ -130,7 +130,6 @@ docker push $ECR_BASE/dapr-iot-processor:latest
 ### 8. Deploy the services
 
 ```bash
-# Fill in your role ARNs from Terraform outputs
 INGESTOR_ROLE_ARN=$(cd terraform && terraform output -raw ingestor_role_arn)
 PROCESSOR_ROLE_ARN=$(cd terraform && terraform output -raw processor_role_arn)
 

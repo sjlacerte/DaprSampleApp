@@ -29,6 +29,7 @@ spec:
         dapr.io/app-port: "8080"
         dapr.io/app-protocol: "http"
         dapr.io/log-level: "info"
+        dapr.io/wait-max-seconds: "30"
     spec:
       serviceAccountName: dapr-iot-ingestor
       containers:

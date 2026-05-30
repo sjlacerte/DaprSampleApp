@@ -33,5 +33,8 @@ resource "kubernetes_storage_class_v1" "default_ebs_gp3" {
     fsType = "ext4"
   }
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    aws_eks_access_policy_association.cluster_admins,
+  ]
 }
