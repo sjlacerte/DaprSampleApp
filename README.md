@@ -44,14 +44,33 @@ Configure AWS credentials: `aws configure`
 
 ### Fresh-cluster bootstrap notes
 
-This repo now codifies the common EKS first-run prerequisites in Terraform:
+Terraform provisions the following EKS prerequisites:
 
 - EKS access entry and cluster-admin policy for the Terraform caller
 - EBS CSI addon installation
 - Node role permission for EBS CSI (`AmazonEBSCSIDriverPolicy`)
-- Default Kubernetes StorageClass (`ebs-gp3-default`)
 
-On a brand-new cluster, wait until EBS CSI is healthy before running Dapr init:
+After `terraform apply`, create the default StorageClass:
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-gp3-default
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ebs.csi.aws.com
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  type: gp3
+  fsType: ext4
+EOF
+```
+
+Wait until EBS CSI is healthy before running Dapr init:
 
 ```bash
 kubectl get pods -n kube-system | grep -i ebs
