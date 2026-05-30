@@ -10,3 +10,16 @@
 - Conversation
 - Middleware
 - Service-to-Service Invocation
+
+cluster_endpoint = "https://8C16D169CCEE87A628324E3255AD58F7.gr7.us-east-1.eks.amazonaws.com"
+cluster_name = "dapr-iot-eks"
+ingestor_role_arn = "arn:aws:iam::473741442322:role/dapr-iot-ingestor-role"
+kubeconfig_command = "aws eks update-kubeconfig --region us-east-1 --name dapr-iot-eks"
+processor_role_arn = "arn:aws:iam::473741442322:role/dapr-iot-processor-role"
+redis_host = "dapr-iot-redis.pjg2i2.0001.use1.cache.amazonaws.com:6379"
+
+
+
+
+
+curl -s -X POST $BASE_URL/sensors/device-001/readings -H "Content-Type: application/json" -d '{"value": 22.5, "unit": "celsius", "timestamp": "2026-05-26T14:00:00Z"}' | jq

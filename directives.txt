@@ -60,38 +60,6 @@ DECIDED DAPR COMPONENT → AWS MAPPINGS:
     - Service invocation to Processor: 3 retries (exponential, 500ms→10s), 5s timeout, circuit breaker (trip on 5 consecutive failures)
     - State store operations: 3 retries (exponential)
 
-DECIDED PROJECT STRUCTURE:
-
-DaprSampleApp/
-├── src/
-│   ├── DaprIoT.Ingestor/
-│   │   ├── Program.cs
-│   │   ├── Models/SensorReading.cs
-│   │   └── DaprIoT.Ingestor.csproj
-│   └── DaprIoT.Processor/
-│       ├── Program.cs
-│       ├── Actors/IDeviceActor.cs
-│       ├── Actors/DeviceActor.cs
-│       ├── Workflows/AnomalyDetectionWorkflow.cs
-│       ├── Workflows/Activities/ValidateReadingActivity.cs
-│       ├── Workflows/Activities/AnalyzeReadingActivity.cs
-│       ├── Workflows/Activities/AlertActivity.cs
-│       ├── Models/SensorReading.cs
-│       └── DaprIoT.Processor.csproj
-├── dapr/components/
-│   ├── secretstore.yaml
-│   ├── statestore.yaml
-│   ├── lock.yaml
-│   ├── configuration.yaml
-│   └── resiliency.yaml
-├── k8s/
-│   ├── ingestor-deployment.yaml
-│   └── processor-deployment.yaml
-├── terraform/
-│   ├── main.tf, eks.tf, dynamodb.tf, elasticache.tf
-│   ├── secrets-manager.tf, appconfig.tf, iam.tf
-└── DaprSampleApp.sln
-
 YOUR RESOURCES:
 
 - All Dapr information that you're trained upon, however, use the latest docs where the information is more recent than your training data
