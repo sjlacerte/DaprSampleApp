@@ -2,14 +2,15 @@
 
 A minimal two-service IoT sensor pipeline that demonstrates six Dapr building blocks on AWS EKS.
 
-| Building Block | Where used | AWS backing |
-|---|---|---|
-| Secrets | Ingestor startup | AWS Secrets Manager |
-| External Configuration | Ingestor threshold subscription | ElastiCache (Redis) |
-| Service Invocation | Ingestor → Processor | Dapr native |
-| Distributed Lock | Processor per-device lock | ElastiCache (Redis) |
-| Actors | Processor DeviceActor | DynamoDB |
-| Workflow | Processor AnomalyDetectionWorkflow | DynamoDB |
+| Dapr Building Block | How It's Used in This Project |
+|---|---|
+| **Secrets** | Ingestor loads an API key from AWS Secrets Manager at startup via the Dapr secret store. No credentials in code or config — the sidecar handles AWS auth via IRSA. |
+| **External Configuration**<br>(with hot reload) | `ThresholdService` subscribes to `maxTemperature` and `minPressure` keys in Redis via the Dapr config API. When you update a threshold in Redis, the Ingestor picks it up live without restarting — simulating a fleet operator tuning alert levels in real time. |
+| **Service Invocation** | The Ingestor calls the Processor's `POST /process-reading` endpoint through Dapr's service invocation API rather than a direct HTTP call. Dapr handles service discovery, mTLS, and the resiliency policy (retries, timeout, circuit breaker) transparently. |
+| **Distributed Lock** | Before processing a reading, the Processor acquires a per-device Redis lock. If two readings arrive for the same device simultaneously, one gets `409 Conflict` — preventing race conditions on the actor's state. |
+| **Actors** | One `DeviceActor` instance exists per device ID, maintaining a rolling history of the last 10 readings in DynamoDB. It compares each new reading against the current thresholds and returns whether an anomaly was detected. The actor model makes per-device stateful logic trivially scalable. |
+| **Workflow** | When the actor flags an anomaly, the Processor starts an `AnomalyDetectionWorkflow` with a unique instance ID. Three activities run in sequence — Validate (sanity-check the reading), Analyze (compute delta from device history), Alert (log the alert with context). Workflow state is durably persisted in DynamoDB, so the pipeline survives pod restarts mid-execution. |
+| **Resiliency** | A `Resiliency` policy wraps all service invocation calls from Ingestor → Processor: 3 exponential retries (500ms→10s), a 5s timeout, and a circuit breaker that trips after 5 consecutive failures. State store operations also retry. This means transient DynamoDB or network blips don't surface as errors to the sensor client. |
 
 ## Prerequisites
 
