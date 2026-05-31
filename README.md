@@ -149,6 +149,8 @@ docker push $ECR_BASE/dapr-iot-processor:latest
 
 ### 8. Deploy the services
 
+> **Note:** Step 4 must be completed before this step — the `dapr-iot` namespace and its labels are required by the Dapr sidecar injector.
+
 ```bash
 INGESTOR_ROLE_ARN=$(cd terraform && terraform output -raw ingestor_role_arn)
 PROCESSOR_ROLE_ARN=$(cd terraform && terraform output -raw processor_role_arn)
