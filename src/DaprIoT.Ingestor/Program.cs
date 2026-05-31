@@ -45,6 +45,10 @@ app.MapPost("/sensors/{deviceId}/readings", async (
 
         return Results.Ok(new { status = "accepted", deviceId });
     }
+    catch (InvocationException ex) when (ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict)
+    {
+        return Results.Conflict(new { error = $"Device {deviceId} is currently being processed." });
+    }
     catch (Exception ex)
     {
         logger.LogError(ex, "Failed to forward reading to Processor");
