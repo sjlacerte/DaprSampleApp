@@ -153,13 +153,11 @@ docker push $ECR_BASE/dapr-iot-processor:latest
 INGESTOR_ROLE_ARN=$(cd terraform && terraform output -raw ingestor_role_arn)
 PROCESSOR_ROLE_ARN=$(cd terraform && terraform output -raw processor_role_arn)
 
-sed -e "s|\${INGESTOR_ROLE_ARN}|$INGESTOR_ROLE_ARN|g" \
-    -e "s|\${INGESTOR_IMAGE}|$ECR_BASE/dapr-iot-ingestor:latest|g" \
-    k8s/ingestor-deployment.yaml | kubectl apply -f -
-
-sed -e "s|\${PROCESSOR_ROLE_ARN}|$PROCESSOR_ROLE_ARN|g" \
-    -e "s|\${PROCESSOR_IMAGE}|$ECR_BASE/dapr-iot-processor:latest|g" \
-    k8s/processor-deployment.yaml | kubectl apply -f -
+helm upgrade --install dapr-iot ./helm \
+  --set ecrBase=$ECR_BASE \
+  --set ingestor.roleArn=$INGESTOR_ROLE_ARN \
+  --set processor.roleArn=$PROCESSOR_ROLE_ARN \
+  -n dapr-iot
 
 kubectl rollout status deployment/dapr-iot-ingestor -n dapr-iot
 kubectl rollout status deployment/dapr-iot-processor -n dapr-iot
