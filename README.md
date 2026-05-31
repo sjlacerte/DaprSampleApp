@@ -229,6 +229,72 @@ curl -s -X POST $BASE_URL/sensors/device-002/readings \
 
 The Ingestor picks up the new threshold without restarting (Dapr External Configuration hot-reload via `ThresholdService`).
 
+## Notes on Dapr Workflow and DynamoDB
+
+When an anomalous reading is detected, the Processor starts an `AnomalyDetectionWorkflow` instance. If you look at the DynamoDB table immediately after, you'll see roughly 14 new items appear alongside the actor's `readingHistory` record — all with binary (`B`) values that look like garbled base64. This is expected and is entirely Dapr's internal machinery, not anything written by application code.
+
+Dapr Workflow is built on the [Durable Task Framework](https://github.com/dapr/durabletask-go), which achieves durability by writing every step of a workflow's execution to the state store as it goes. Each item is a serialized protobuf `HistoryEvent`. If the pod crashes mid-workflow, Dapr replays these events on restart to resume from exactly where it left off — without re-executing steps that already completed.
+
+For a single workflow run through `AnomalyDetectionWorkflow` (Validate → Analyze → Alert), Dapr writes 12 history events plus a `metadata` and `customStatus` record:
+
+| Key suffix | Event |
+|---|---|
+| `history-000000` | OrchestratorStarted (internal checkpoint) |
+| `history-000001` | ExecutionStarted — workflow name and full input |
+| `history-000002` | TaskScheduled — `ValidateReadingActivity` |
+| `history-000003` | OrchestratorStarted |
+| `history-000004` | TaskCompleted — `ValidateReadingActivity` result |
+| `history-000005` | TaskScheduled — `AnalyzeReadingActivity` |
+| `history-000006` | OrchestratorStarted |
+| `history-000007` | TaskCompleted — `AnalyzeReadingActivity` result |
+| `history-000008` | TaskScheduled — `AlertActivity` |
+| `history-000009` | OrchestratorStarted |
+| `history-000010` | TaskCompleted — `AlertActivity` |
+| `history-000011` | ExecutionCompleted — final workflow output |
+| `metadata` | Internal bookkeeping (history length, generation) |
+| `customStatus` | Workflow custom status (empty in this app) |
+
+The OrchestratorStarted events at every other step are how Durable Task checkpoints its replay position.
+
+These records accumulate — one set per anomaly — and are not purged automatically. This app does not configure a retention policy. See the [Dapr Workflow docs](https://docs.dapr.io/developing-applications/building-blocks/workflow/) for details on purging workflow state.
+
+All fields in that response are produced entirely by Dapr — your application code contributes only the data *inside* `input` and `output`. The envelope (`instanceID`, `workflowName`, `createdAt`, `lastUpdatedAt`, `runtimeStatus`, and the `properties` keys) is Dapr's:
+
+| Field | Source |
+|---|---|
+| `instanceID` | The ID passed to `ScheduleNewWorkflowAsync` |
+| `workflowName` | The workflow class name registered with Dapr |
+| `createdAt` / `lastUpdatedAt` | Timestamps recorded internally by Dapr |
+| `runtimeStatus` | Dapr's state machine (`PENDING`, `RUNNING`, `COMPLETED`, `FAILED`, etc.) |
+| `dapr.workflow.input` | The input object passed to `ScheduleNewWorkflowAsync`, serialized by Dapr |
+| `dapr.workflow.output` | The return value of `RunAsync` in `AnomalyDetectionWorkflow`, serialized by Dapr |
+
+**To query a workflow instance in human-readable form**, use the endpoint added to the Ingestor:
+
+```bash
+curl -s $BASE_URL/workflows/<instanceId> | jq
+```
+
+The instance ID is logged by the Processor when the workflow starts:
+```
+Started workflow anomaly-device-001-1780188108660 for device device-001
+```
+
+Example response:
+```json
+{
+  "instanceID": "anomaly-device-001-1780188108660",
+  "workflowName": "AnomalyDetectionWorkflow",
+  "createdAt": "2026-05-31T00:41:48Z",
+  "lastUpdatedAt": "2026-05-31T00:41:49Z",
+  "runtimeStatus": "COMPLETED",
+  "properties": {
+    "dapr.workflow.input": "{\"deviceId\":\"device-001\",\"reading\":{\"value\":95.0,...},\"threshold\":50,...}",
+    "dapr.workflow.output": "\"Average of last N readings: 95.0. Current: 95.0. Delta: 0.0. Anomaly confirmed.\""
+  }
+}
+```
+
 ## Teardown
 
 ```bash

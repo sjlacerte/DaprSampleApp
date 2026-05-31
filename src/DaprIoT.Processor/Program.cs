@@ -10,6 +10,7 @@ using DaprIoT.Processor.Workflows.Activities;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDaprClient();
+builder.Services.AddHttpClient();
 
 builder.Services.AddActors(options =>
 {
@@ -85,6 +86,20 @@ app.MapPost("/process-reading", async (
     {
         await daprClient.Unlock(lockStore, request.DeviceId, lockOwner);
     }
+});
+
+app.MapGet("/workflows/{instanceId}", async (string instanceId, IHttpClientFactory httpClientFactory) =>
+{
+    var daprPort = Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500";
+    var client = httpClientFactory.CreateClient();
+    var response = await client.GetAsync(
+        $"http://localhost:{daprPort}/v1.0-beta1/workflows/dapr/{instanceId}");
+
+    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        return Results.NotFound(new { error = $"Workflow '{instanceId}' not found." });
+
+    var json = await response.Content.ReadAsStringAsync();
+    return Results.Content(json, "application/json");
 });
 
 app.MapActorsHandlers();

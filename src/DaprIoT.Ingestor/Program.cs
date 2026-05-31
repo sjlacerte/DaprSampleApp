@@ -52,4 +52,21 @@ app.MapPost("/sensors/{deviceId}/readings", async (
     }
 });
 
+app.MapGet("/workflows/{instanceId}", async (string instanceId, DaprClient daprClient) =>
+{
+    try
+    {
+        var result = await daprClient.InvokeMethodAsync<object>(
+            HttpMethod.Get,
+            "dapr-iot-processor",
+            $"workflows/{instanceId}");
+
+        return Results.Ok(result);
+    }
+    catch (InvocationException ex) when (ex.Response.StatusCode == System.Net.HttpStatusCode.NotFound)
+    {
+        return Results.NotFound(new { error = $"Workflow '{instanceId}' not found." });
+    }
+});
+
 app.Run();
