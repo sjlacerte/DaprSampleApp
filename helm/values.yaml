@@ -1,0 +1,9 @@
+ecrBase: ""        # e.g. 473741442322.dkr.ecr.us-east-1.amazonaws.com
+ingestor:
+  roleArn: ""      # from: terraform output -raw ingestor_role_arn
+  image:
+    tag: latest
+processor:
+  roleArn: ""      # from: terraform output -raw processor_role_arn
+  image:
+    tag: latest
